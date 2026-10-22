@@ -1,0 +1,134 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cunningham Golf</title>
+<style>
+:root{--g:#1f5e3b;--g2:#2e7d4f;--sand:#f4efe3;--ink:#1d2a22}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:var(--sand);color:var(--ink);padding-bottom:80px}
+header{background:var(--g);color:#fff;padding:16px}
+header h1{margin:0;font-size:20px}.goal{margin-top:6px;font-size:15px;opacity:.95}
+.goal input{background:transparent;border:0;border-bottom:1px solid #fff8;color:#fff;font-size:15px;width:150px}
+.cd{font-size:13px;opacity:.85;margin-top:4px}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#fff;border-top:1px solid #ddd}
+nav button{flex:1;padding:14px 4px;border:0;background:none;font-size:13px;color:#555}nav button.on{color:var(--g);font-weight:700;border-top:3px solid var(--g)}
+main{padding:12px}.card{background:#fff;border-radius:12px;padding:12px;margin-bottom:12px;box-shadow:0 1px 3px #0001}
+h2{font-size:17px;margin:4px 0 10px}h3{font-size:15px;margin:10px 0 6px;color:var(--g)}
+.item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #eee}
+.item input[type=checkbox]{width:26px;height:26px;accent-color:var(--g2);flex:none}
+.item .t{flex:1}.item small{color:#666;display:block}
+.tag{font-size:11px;padding:2px 8px;border-radius:10px;background:#e6f0e9;color:var(--g)}
+.btn{background:var(--g2);color:#fff;border:0;border-radius:10px;padding:12px 14px;font-size:15px}
+.btn.alt{background:#fff;color:var(--g);border:1px solid var(--g)}.x{background:#c0392b;color:#fff;border:0;border-radius:8px;padding:8px 10px}
+.edit input,.edit select,textarea{width:100%;padding:10px;font-size:15px;border:1px solid #ccc;border-radius:8px;margin:3px 0}
+.row{display:flex;gap:6px;align-items:center}.days{display:flex;gap:4px;overflow-x:auto;margin-bottom:10px}
+.days button{flex:1;min-width:44px;padding:10px 0;border-radius:10px;border:1px solid #ccc;background:#fff;font-size:14px}.days button.on{background:var(--g);color:#fff;border-color:var(--g)}
+.big{font-size:34px;font-weight:700;color:var(--g)}.bar{height:12px;background:#e3e3e3;border-radius:6px;overflow:hidden}.bar i{display:block;height:100%;background:var(--g2)}
+.note{font-size:13px;color:#555;background:#fff8e1;border-left:4px solid #e0a800;padding:10px;border-radius:6px}
+.prof{display:flex;gap:6px;margin-top:8px}.prof button{flex:1;padding:10px;border-radius:20px;border:1px solid #fff8;background:transparent;color:#fff;font-size:15px}.prof button.on{background:#fff;color:var(--g);font-weight:700}
+nav button{font-size:12px}.timer{font-size:48px;font-weight:700;text-align:center;color:var(--g)}.phase{text-align:center;font-size:20px;margin:6px}
+.rc{background:#eef5f0;border-radius:10px;padding:10px;margin:6px 0}.warm{background:#fdf3ea;border-left:4px solid #d9822b}
+.chip{display:inline-block;padding:10px 14px;border-radius:20px;border:1px solid #ccc;background:#fff;margin:3px;font-size:15px}.chip.on{background:var(--g2);color:#fff}
+</style></head><body>
+<header><h1 id="hl">Comeback: playing with Dakota</h1>
+<div class="prof"><button data-p="steve">Steve</button><button data-p="dakota">Dakota</button></div>
+<div class="goal">Target date: <input type="date" id="target"></div><div class="cd" id="cd"></div></header>
+<main id="app"></main>
+<nav><button data-t="practice">Practice</button><button data-t="workout">Workout</button><button data-t="progress">Progress</button><button data-t="coach">Coach</button><button data-t="together">Together</button><button data-t="mental">Mental</button></nav>
+<script>
+const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const d=(cat,name,target,desc)=>({cat,name,target,desc:desc||''});
+const C=o=>JSON.parse(JSON.stringify(o));
+// Steve: comeback
+const M1=d('Mirror Work','Setup & posture check','10 reps','Hold address, check spine angle, knee flex, ball position'),M2=d('Mirror Work','Slow takeaway to hip high','10 reps','Clubface matches spine angle'),M3=d('Mirror Work','Top position hold','5 x 5 sec','Lead arm straight-ish, wrists set'),M4=d('Mirror Work','Impact position drill','10 reps','Hands ahead, hips open, weight forward');
+const CH=d('Chipping','Landing-spot chips','30 balls','Pick a spot, vary clubs'),CH2=d('Chipping','Up-and-down game','10 attempts','Chip then putt out, track saves');
+const P1=d('Putting','3-ft circle drill','25 makes','Six balls around the hole'),P2=d('Putting','Lag putts 30-40 ft','15 min','Stop inside a 3-ft circle');
+const R1=d('Hitting Balls','Wedges to targets','30 balls','Half and 3/4 swings'),R2=d('Hitting Balls','Mid irons','30 balls','Smooth tempo, alignment stick'),R3=d('Hitting Balls','Driver / woods','15 balls','Pick fairway targets');
+const PL=d('Playing','9 holes (or 18)','1 round','Track score, putts, fairways');
+const SP={Mon:[M1,M2,P1,CH],Tue:[M1,M3,R1,R2],Wed:[M4,P2,CH2],Thu:[M1,M2,R1,R3],Fri:[M3,M4,P1,CH],Sat:[M1,PL],Sun:[P2]};
+const MOB=[d('Mobility','90/90 hip switches','2 min','Sit with both knees at 90°, rotate side to side'),d('Mobility','Open books (T-spine)','10/side','Lying on side, rotate top arm open'),d('Mobility','Cat-cow','10 reps','Slow spine flex/extend on all fours')];
+const S1=[d('Lower body','Goblet squat','3 x 10','Hold weight at chest, sit back and down'),d('Lower body','Glute bridge','3 x 12','Drive hips up, squeeze glutes'),d('Core','Dead bug','3 x 8/side','Low back flat, extend opposite arm/leg'),d('Cardio','Brisk walk or bike','15 min','Easy-moderate pace')];
+const S2=[d('Core & rotation','Band/cable rotations','3 x 10/side','Rotate from hips and chest, arms long'),d('Lower body','Reverse lunge','3 x 8/side','Step back, front knee stable'),d('Core','Side plank','3 x 20 sec/side','Straight line head to feet'),d('Core & rotation','Med-ball rotational throw','3 x 8/side','Light ball against wall (or skip)')];
+const S3=[d('Lower body','Romanian deadlift','3 x 10','Hinge at hips, flat back'),d('Lower body','Step-ups','3 x 8/side','Controlled, full foot on box'),d('Core','Pallof press','3 x 10/side','Resist rotation, press band out'),d('Cardio','Walk or bike','15 min','Easy pace')];
+const SW={Mon:[...MOB,...S1],Tue:[...MOB],Wed:[...MOB,...S2],Thu:[...MOB],Fri:[...MOB,...S3],Sat:[...MOB],Sun:[...MOB]};
+// Dakota: D-1 stats-focused
+const SG=(c,n,t,x)=>d(c,n,t,x);
+const OTT=SG('Off the tee','Fairway gate drill (driver)','20 balls · log FW %','Two sticks 30 yds wide; count fairways hit');
+const APP=SG('Approach','Wedge ladder 50-125 yds','40 balls · log proximity','Every 15 yds; note avg distance from target');
+const APP2=SG('Approach','Iron GIR challenge','18 shots · log GIR','Random targets/clubs, green-size zones');
+const ARG=SG('Around the green','Up-and-down series','20 reps · log U&D %','Mixed lies: rough, tight, bunker');
+const SAND=SG('Around the green','Bunker saves','15 reps','Score: inside 6 ft = save');
+const PT1=SG('Putting','Make zone 3-8 ft','50 putts · log make %','Gate drill + clock drill');
+const PT2=SG('Putting','Lag 20-50 ft','20 putts · 3-putt avoidance','Count putts finishing inside 3 ft');
+const MW=d('Mirror Work','Positions check','10 min','Video or mirror; coach checkpoints');
+const QL=d('Qualifying','Qualifier round (stats)','18 holes','Log score, FW, GIR, putts, U&D');
+const PR=d('Playing','Practice round (stats)','9-18 holes','Track strokes-gained style categories');
+const DP={Mon:[MW,OTT,APP,PT1],Tue:[MW,APP2,ARG,PT2,PR],Wed:[MW,OTT,SAND,PT1],Thu:[MW,APP,ARG,PT1,PR],Fri:[MW,APP2,PT2,ARG],Sat:[QL],Sun:[PT1]};
+const DW={Mon:[...MOB,...S1,d('Power','Med-ball scoop toss','4 x 5/side','Explosive hip rotation')],Tue:[...MOB,d('Speed','Overspeed swings','3 x 5','Light/heavy speed sticks')],Wed:[...MOB,...S2],Thu:[...MOB,d('Cardio','Intervals bike','20 min','Moderate-hard intervals')],Fri:[...MOB,...S3,d('Power','Box jumps','4 x 4','Land soft')],Sat:[...MOB],Sun:[...MOB]};
+const prof=(p,w)=>({p:C(p),w:C(w),done:{},log:{},coach:{date:'',coachName:'',find:'',goals:'',focus:''},why:'',routine:['Pick target behind ball','One rehearsal swing','Align clubface, then feet','One look, breathe out','Commit and go'],journal:{},mood:{},target:''});
+let S=JSON.parse(localStorage.getItem('cg2')||'null');
+if(!S){const old=JSON.parse(localStorage.getItem('sgc')||'null');const st=prof(SP,SW);st.coach.date='2026-10-24';st.coach.coachName='Jeremy';
+ if(old){Object.assign(st,{p:old.p,w:old.w,done:old.done,log:old.log,target:old.target||''});Object.assign(st.coach,old.coach)}
+ const dk=prof(DP,DW);dk.coach.coachName='ULM coaches';S={who:'steve',P:{steve:st,dakota:dk},T:{next:'',rounds:[],goals:[{t:'Play 18 together',done:false}],matches:[]}}}
+const save=()=>localStorage.setItem('cg2',JSON.stringify(S));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const iso=x=>x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');
+function monday(){const x=new Date();x.setHours(0,0,0,0);x.setDate(x.getDate()-((x.getDay()+6)%7));return x}
+let [hp,ht]=location.hash.slice(1).split('/');if(hp&&S.P[hp])S.who=hp;
+let tab=ht||'practice',day=DAYS[(new Date().getDay()+6)%7],edit=false;
+const U=()=>S.P[S.who],UP='S.P[S.who]';
+function dateFor(dn){const m=monday();m.setDate(m.getDate()+DAYS.indexOf(dn));return iso(m)}
+function plan(k){const u=U();const list=u[k][day]||(u[k][day]=[]);const L=`${UP}.${k}.${day}`;
+ let h=`<div class="days">${DAYS.map(x=>`<button class="${x==day?'on':''}" onclick="day='${x}';R()">${x}</button>`).join('')}</div><div class="card"><div class="row" style="justify-content:space-between"><h2>${day} · ${k=='p'?'Practice':'Workout'}</h2><button class="btn alt" onclick="edit=!edit;R()">${edit?'Done':'Edit'}</button></div>`;
+ if(S.who=='dakota'&&k=='p')h+='<p style="font-size:13px;color:#666;margin:0 0 6px">Starter template. Edit to match the team schedule from the coaches.</p>';
+ if(!list.length)h+='<p>Rest day.</p>';let last='';
+ list.forEach((it,i)=>{if(edit){const f=(n,ph)=>`<input value="${esc(it[n])}" placeholder="${ph}" onchange="${L}[${i}].${n}=this.value;save()">`;h+=`<div class="edit card" style="background:#f8f8f8">${f('name','Name')}<div class="row">${f('cat','Category')}${f('target','Target')}</div>${f('desc','Description')}<button class="x" onclick="${L}.splice(${i},1);save();R()">Remove</button></div>`;return}
+  if(it.cat!=last){h+=`<h3>${esc(it.cat)}</h3>`;last=it.cat}const kk=k+'|'+dateFor(day)+'|'+i;
+  h+=`<label class="item"><input type="checkbox" ${u.done[kk]?'checked':''} onchange="U().done['${kk}']=this.checked;save()"><span class="t"><b>${esc(it.name)}</b><small>${esc(it.desc)}</small></span><span class="tag">${esc(it.target)}</span></label>`});
+ if(edit)h+=`<button class="btn" onclick="${L}.push({cat:'${k=='p'?'Putting':'Mobility'}',name:'New drill',target:'',desc:''});save();R()">+ Add</button> <button class="btn alt" onclick="if(confirm('Reset to defaults?')){U().${k}=C(${S.who=='steve'?(k=='p'?'SP':'SW'):(k=='p'?'DP':'DW')});save();R()}">Reset</button>`;
+ h+='</div>';if(k=='w')h+='<p class="note">Check with your doctor before starting a new exercise program. Stop any exercise that causes pain.</p>';return h}
+function pct(){const u=U(),m=monday();let t=0,c=0;for(const k of['p','w'])DAYS.forEach(dn=>(u[k][dn]||[]).forEach((_,i)=>{t++;const x=new Date(m);x.setDate(x.getDate()+DAYS.indexOf(dn));if(u.done[k+'|'+iso(x)+'|'+i])c++}));return t?Math.round(100*c/t):0}
+function streak(){const u=U();let n=0,x=new Date();const any=ds=>Object.keys(u.done).some(k=>u.done[k]&&k.split('|')[1]==ds);if(!any(iso(x)))x.setDate(x.getDate()-1);while(any(iso(x))){n++;x.setDate(x.getDate()-1)}return n}
+const STATS=[['score','Score'],['fw','Fairways hit'],['gir','GIR'],['putts','Putts'],['ud','Up & downs (made/att)']];
+function progress(){const u=U(),p=pct(),t=iso(new Date()),L=u.log[t]||{};const dk=S.who=='dakota';
+ let h=`<div class="card"><h2>This week</h2><div class="big">${p}%</div><div class="bar"><i style="width:${p}%"></i></div><p>Streak: <b>${streak()}</b> day(s) in a row</p></div><div class="card edit"><h2>Today's log (${t})</h2>`;
+ (dk?STATS:STATS.slice(0,1)).forEach(([k,l])=>h+=`<input placeholder="${l}" value="${esc(L[k])}" onchange="lg('${k}',this.value)">`);
+ h+=`<textarea rows="3" placeholder="Notes" onchange="lg('notes',this.value)">${esc(L.notes)}</textarea></div>`;
+ if(dk){const r=Object.values(u.log).filter(x=>x.score);const av=k=>{const v=r.map(x=>parseFloat(x[k])).filter(x=>!isNaN(x));return v.length?(v.reduce((a,b)=>a+b,0)/v.length).toFixed(1):'–'};
+  const ud=r.map(x=>(x.ud||'').split('/').map(Number)).filter(a=>a.length==2&&a[1]);const udp=ud.length?Math.round(100*ud.reduce((a,b)=>a+b[0],0)/ud.reduce((a,b)=>a+b[1],0))+'%':'–';
+  h+=`<div class="card"><h2>Averages (${r.length} rounds)</h2><div class="row" style="flex-wrap:wrap;gap:8px"><span class="tag">Score ${av('score')}</span><span class="tag">FW ${av('fw')}</span><span class="tag">GIR ${av('gir')}</span><span class="tag">Putts ${av('putts')}</span><span class="tag">U&amp;D ${udp}</span></div></div>`}
+ const ks=Object.keys(u.log).sort().reverse();h+='<div class="card"><h2>History</h2>'+(ks.length?ks.map(k=>`<div class="item"><span class="t"><b>${k}</b><small>${esc(u.log[k].notes)}</small></span>${u.log[k].score?`<span class="tag">${esc(u.log[k].score)}</span>`:''}</div>`).join(''):'<p>No entries yet.</p>');return h+'</div>'}
+function lg(f,v){const t=iso(new Date());(U().log[t]=U().log[t]||{})[f]=v;save();R()}
+function coach(){const c=U().coach;const f=(n,l,r)=>`<label><b>${l}</b><textarea rows="${r}" onchange="U().coach.${n}=this.value;save()">${esc(c[n])}</textarea></label>`;
+ return `<div class="card edit"><h2>Coach notes</h2><label><b>Coach</b><input value="${esc(c.coachName)}" onchange="U().coach.coachName=this.value;save()"></label><label><b>Assessment date</b><input type="date" value="${c.date}" onchange="U().coach.date=this.value;save()"></label>${f('find','Findings',5)}${f('goals','Goals',4)}${f('focus','Top things to practice',3)}</div>
+ <div class="card edit"><h2>Why we play</h2><textarea rows="3" placeholder="In your own words…" onchange="U().why=this.value;save()">${esc(U().why)}</textarea></div>`}
+function together(){const T=S.T;let n='';if(T.next){const x=Math.ceil((new Date(T.next+'T00:00')-new Date())/864e5);n=x>=0?`<div class="big">${x}</div><p>days to the next round together</p>`:'<p>Set your next round.</p>'}
+ let h=`<div class="card edit"><h2>Next round together</h2>${n}<input type="date" value="${T.next}" onchange="S.T.next=this.value;save();R()"></div>`;
+ h+=`<div class="card edit"><h2>Shared goals</h2>${T.goals.map((g,i)=>`<label class="item"><input type="checkbox" ${g.done?'checked':''} onchange="S.T.goals[${i}].done=this.checked;save()"><span class="t">${esc(g.t)}</span><button class="x" onclick="S.T.goals.splice(${i},1);save();R()">×</button></label>`).join('')}<div class="row"><input id="ng" placeholder="New goal"><button class="btn" onclick="if(ng.value){S.T.goals.push({t:ng.value,done:false});save();R()}">Add</button></div></div>`;
+ const w={steve:0,dakota:0,tie:0};T.matches.forEach(m=>w[m.w]++);
+ h+=`<div class="card edit"><h2>Rounds &amp; matches</h2><p>Steve ${w.steve} · Dakota ${w.dakota} · Halved ${w.tie}</p><input type="date" id="md" value="${iso(new Date())}"><input id="mc" placeholder="Course"><div class="row"><input id="ms" placeholder="Steve score"><input id="mk" placeholder="Dakota score"></div><select id="mw"><option value="">Match result (optional)</option><option value="steve">Steve won</option><option value="dakota">Dakota won</option><option value="tie">Halved</option></select><input id="mn" placeholder="Memory from the round"><button class="btn" onclick="addM()">Save round</button>`;
+ h+=T.matches.slice().reverse().map((m,j)=>`<div class="item"><span class="t"><b>${esc(m.d)} · ${esc(m.c)}</b><small>Steve ${esc(m.s)} · Dakota ${esc(m.k)} ${m.n?'· '+esc(m.n):''}</small></span></div>`).join('');return h+'</div>'}
+function addM(){S.T.matches.push({d:md.value,c:mc.value,s:ms.value,k:mk.value,w:mw.value,n:mn.value});if(mw.value=='')S.T.matches.at(-1).w='none';save();R()}
+const CARDS=[['Bad hole','One hole is one hole. The next tee is a clean slate. What is the target?'],['Missed short putt','You read it, you committed. Good routine is the win; makes follow routine.'],['Three-putt','Speed first. Next lag: pick a 3-ft circle and just die it in there.'],['Playing poorly in front of others','Nobody is watching as closely as you think. Play your game, your pace.'],['Thinking about the score','Bring it back to this shot. Target, breath, commit.'],['Bad range session','Practice is for finding things. Write one thing you learned and leave it.']];
+let br=null;
+function mental(){const u=U(),t=iso(new Date()),J=u.journal[t]||{},Md=u.mood[t]||{};
+ let h=`<div class="card edit"><h2>Pre-shot routine</h2>${u.routine.map((r,i)=>`<div class="row"><b>${i+1}.</b><input value="${esc(r)}" onchange="U().routine[${i}]=this.value;save()"><button class="x" onclick="U().routine.splice(${i},1);save();R()">×</button></div>`).join('')}<button class="btn alt" onclick="U().routine.push('');save();R()">+ Step</button></div>`;
+ h+=`<div class="card"><h2>Box breathing · 2 min</h2><div class="phase" id="bp">In 4 · Hold 4 · Out 4 · Hold 4</div><div class="timer" id="bt">2:00</div><div style="text-align:center"><button class="btn" onclick="breathe()">Start</button> <button class="btn alt" onclick="stopB()">Stop</button></div></div>`;
+ h+=`<div class="card"><h2>Between shots</h2><div class="rc"><b>Reset</b> · Let the last shot go. One slow breath out.</div><div class="rc"><b>Refocus</b> · Look at something around you. Back to the present.</div><div class="rc"><b>Commit</b> · Pick the shot and target, run your routine, trust it.</div></div>`;
+ h+=`<div class="card"><h2>Reframing cards</h2>${CARDS.map(c=>`<details class="rc"><summary><b>${c[0]}</b></summary><p>${c[1]}</p></details>`).join('')}</div>`;
+ const q=[['good','Three things that went well'],['work','One thing to work on'],['proud','A moment I handled well'],['enjoy','What I enjoyed today']];
+ h+=`<div class="card edit"><h2>Post-round journal (${t})</h2>${q.map(([k,l])=>`<label><b>${l}</b><textarea rows="2" onchange="jr('${k}',this.value)">${esc(J[k])}</textarea></label>`).join('')}</div>`;
+ const sc=(k,l)=>`<p><b>${l}</b></p>${[1,2,3,4,5].map(n=>`<span class="chip ${Md[k]==n?'on':''}" onclick="md2('${k}',${n})">${n}</span>`).join('')}`;
+ const hist=Object.keys(u.mood).sort().slice(-14);
+ h+=`<div class="card"><h2>Check-in</h2>${sc('m','Mood (1 low – 5 great)')}${sc('e','Energy (1 low – 5 high)')}<div style="display:flex;align-items:flex-end;gap:4px;height:70px;margin-top:12px">${hist.map(k=>`<div title="${k}" style="flex:1;display:flex;gap:1px;align-items:flex-end;height:100%"><i style="flex:1;background:var(--g2);height:${(u.mood[k].m||0)*20}%"></i><i style="flex:1;background:#d9a441;height:${(u.mood[k].e||0)*20}%"></i></div>`).join('')}</div><small>Last 14 check-ins · green mood, gold energy</small></div>`;
+ h+=`<div class="card warm"><h2>It's more than golf</h2><p>Everybody has stretches where things feel heavy, on the course or off it. Talking to someone you trust is a strong move, not a weak one.</p><p>${S.who=='dakota'?'Your team sports psychologist or athletic trainer is a great place to start.':'A friend, family member, or your doctor is a great place to start.'}</p><p>If you're struggling, you can call or text <a href="tel:988"><b>988</b></a> (Suicide &amp; Crisis Lifeline) any time, 24/7. <a href="sms:988">Text 988</a></p></div>`;return h}
+function jr(k,v){const t=iso(new Date());(U().journal[t]=U().journal[t]||{})[k]=v;save()}
+function md2(k,n){const t=iso(new Date());(U().mood[t]=U().mood[t]||{})[k]=n;save();R()}
+function breathe(){stopB();let s=120;const P=['Breathe in','Hold','Breathe out','Hold'];br=setInterval(()=>{s--;const e=document.getElementById('bt');if(!e||s<0){stopB();return}e.textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0');document.getElementById('bp').textContent=P[Math.floor((120-s)/4)%4]+' · '+(4-(120-s)%4)},1000);document.getElementById('bp').textContent='Breathe in · 4'}
+function stopB(){clearInterval(br);br=null}
+function R(){stopB();const u=U();document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t==tab));document.querySelectorAll('.prof button').forEach(b=>b.classList.toggle('on',b.dataset.p==S.who));
+ hl.textContent=S.who=='steve'?'Comeback: playing with Dakota':"Dakota · ULM Warhawks";
+ app.innerHTML={practice:()=>plan('p'),workout:()=>plan('w'),progress,coach,together,mental}[tab]();
+ target.value=u.target||'';if(u.target){const n=Math.ceil((new Date(u.target+'T00:00')-new Date())/864e5);cd.textContent=n>=0?n+' days to go':'Target date passed. Set the next one.'}else cd.textContent='Set a target date to count down to.'}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;edit=false;location.hash=S.who+'/'+tab;R()});
+document.querySelectorAll('.prof button').forEach(b=>b.onclick=()=>{S.who=b.dataset.p;edit=false;save();location.hash=S.who+'/'+tab;R()});
+target.onchange=e=>{U().target=e.target.value;save();R()};R();
+</script>
+</body></html>
